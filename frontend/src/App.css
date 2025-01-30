@@ -1,208 +1,142 @@
-body {
-  font-family: Arial, sans-serif;
+/* App.css */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+:root {
+  --primary-color: #6366f1;
+  --primary-dark: #4f46e5;
+  --secondary-color: #ec4899;
+  --background-dark: #111827;
+  --background-light: #1f2937;
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --card-background: rgba(31, 41, 55, 0.7);
+  --error-color: #ef4444;
+  --success-color: #10b981;
 }
-
-.app-container {
-  padding: 20px;
-  background-color: #f0f4f8;
-  color: #333;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-.app-container.dark {
-  background-color: #333;
-  color: #f0f4f8;
-}
-
-.app-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.theme-toggle-btn {
-  padding: 10px 15px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  background-color: #4caf50;
-  color: white;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-}
-
-.theme-toggle-btn:hover {
-  background-color: #45a049;
-}
-
-.controls {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.controls input {
-  padding: 10px;
-  font-size: 16px;
-  width: 200px;
-  margin-right: 10px;
-  border-radius: 5px;
-}
-
-.controls button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  background-color: #2196f3;
-  color: white;
-  border-radius: 5px;
-}
-
-.weather-chart-container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-canvas {
-  max-height: 500px;
-}
-
-
-.weather-chart-container {
-  width: 90%;
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-.search-controls {
-  margin-bottom: 20px;
-}
-
-.search-controls input {
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 5px;
-  width: 200px;
-  margin-right: 10px;
-}
-
-.search-controls button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-}
-
-.search-controls button:hover {
-  background-color: #0056b3;
-}
-
-.error-message {
-  color: red;
-  margin-top: 10px;
-}
-
-canvas {
-  max-height: 400px;
-}
-
-.search-input-container {
-  position: relative;
-  width: 300px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-}
-
+/* Suggestions Dropdown Styles */
 .suggestions {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-top: none;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  max-height: 200px;
+  background: var(--background-dark);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-height: 300px;
   overflow-y: auto;
+  z-index: 1000;
 }
 
 .suggestions li {
-  padding: 10px;
+  padding: 12px 16px;
+  color: var(--text-primary);
   cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suggestions li:last-child {
+  border-bottom: none;
 }
 
 .suggestions li:hover {
-  background-color: #f0f0f0;
+  background: rgba(99, 102, 241, 0.2);
 }
 
-.search-button {
-  margin-left: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
+.suggestion-state {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
 }
 
+/* Chart Section Styles */
+.chart-section {
+  background: var(--card-background);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
 
-.weather-app {
-  font-family: 'Arial', sans-serif;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f0f8ff;
+.chart-section h2 {
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  padding-left: 1rem;
+  border-left: 4px solid var(--primary-color);
+}
+
+.chart-container {
+  position: relative;
+  height: 450px; /* Increased height */
+  width: 100%;
+  padding: 1rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(
+    135deg,
+    var(--background-dark) 0%,
+    var(--background-light) 100%
+  );
+  color: var(--text-primary);
   min-height: 100vh;
 }
 
+.weather-app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Header Styles */
 .app-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 3rem;
 }
 
-.app-header h1 {
-  color: #2c3e50;
+.header-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
 }
 
+.header-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* Search Section Styles */
 .search-section {
-  margin-bottom: 30px;
-}
-
-
-
-.search-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 0 5px 5px 0;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.search-button:hover {
-  background-color: #2980b9;
+  margin-bottom: 2rem;
 }
 
 .search-container {
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  position: relative;
-  width: 100%;
-  max-width: 800px;
+  gap: 1rem;
+  max-width: 600px;
   margin: 0 auto;
 }
 
@@ -211,196 +145,348 @@ canvas {
   flex-grow: 1;
 }
 
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
 .search-input {
   width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #bdc3c7;
-  border-radius: 5px;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  background: var(--card-background);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
-.suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  background-color: white;
-  border: 1px solid #bdc3c7;
-  border-radius: 0 0 5px 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-height: 200px;
-  overflow-y: auto;
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
-
-.suggestions li {
-  padding: 10px;
+.search-button {
+  padding: 0 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.suggestions li:hover {
-  background-color: #ecf0f1;
+.search-button:hover {
+  background: var(--primary-dark);
 }
 
-.weather-info {
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
+.search-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.weather-info h2 {
-  color: #2c3e50;
-  margin-bottom: 20px;
-}
-
-.weather-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
+/* Weather Card Styles */
 .weather-card {
-  background-color: #ecf0f1;
-  border-radius: 5px;
-  padding: 15px;
-  text-align: center;
+  background: var(--card-background);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.weather-card h3 {
-  color: #34495e;
-  margin-bottom: 10px;
+.card-content {
+  flex-grow: 1;
 }
 
-.last-updated {
-  text-align: right;
-  color: #7f8c8d;
-  font-style: italic;
-  margin-top: 20px;
+.card-content h3 {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
 }
 
+.primary-value {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.secondary-value {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+}
+
+/* Chart Section Styles */
 .chart-section {
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: var(--card-background);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chart-section h2 {
-  color: #2c3e50;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: var(--text-primary);
 }
 
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+/* Error Styles */
+.error-container {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 0.9rem;
+}
+
+/* Chatbot Styles */
 .chat-toggle {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #3498db;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
+  border-radius: 2rem;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  z-index: 100;
 }
 
 .chat-toggle:hover {
-  background-color: #2980b9;
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.chat-toggle span {
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .chatbot-container {
   position: fixed;
-  bottom: 90px;
-  right: 20px;
+  bottom: 6rem;
+  right: 2rem;
   width: 350px;
   height: 500px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: var(--card-background);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .chat-header {
-  background-color: #3498db;
-  color: white;
-  padding: 10px;
-  border-radius: 10px 10px 0 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.chat-header h3 {
-  margin: 0;
+.chat-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chat-header-icon {
+  color: var(--primary-color);
 }
 
 .close-chat {
-  background: none;
+  background: transparent;
   border: none;
-  color: white;
-  font-size: 18px;
+  color: var(--text-secondary);
   cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.close-chat:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
 }
 
 .chat-history {
   flex-grow: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .chat-message {
-  margin-bottom: 10px;
-  max-width: 80%;
+  display: flex;
+  gap: 0.5rem;
+  max-width: 85%;
+}
+
+.chat-message.assistant {
+  align-self: flex-start;
 }
 
 .chat-message.user {
-  margin-left: auto;
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message-icon {
+  font-size: 1.2rem;
+  color: var(--primary-color);
 }
 
 .message-content {
-  padding: 10px;
-  border-radius: 10px;
-  background-color: #ecf0f1;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
 }
 
 .chat-message.user .message-content {
-  background-color: #3498db;
-  color: white;
+  background: var(--primary-color);
 }
 
 .chat-input {
+  padding: 1rem;
   display: flex;
-  padding: 10px;
-  border-top: 1px solid #ecf0f1;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chat-input input {
   flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #bdc3c7;
-  border-radius: 5px;
-  margin-right: 10px;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
-.chat-input button {
-  background-color: #3498db;
+.chat-input input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.send-button {
+  background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 5px;
-  padding: 10px;
+  border-radius: 0.5rem;
+  padding: 0 1rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
 }
 
-.chat-input button:hover {
-  background-color: #2980b9;
+.send-button:hover {
+  background: var(--primary-dark);
+}
+
+.send-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Loading Animation */
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .weather-app {
+    padding: 1rem;
+  }
+
+  .header-content h1 {
+    font-size: 2rem;
+  }
+
+  .weather-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .chatbot-container {
+    width: calc(100% - 2rem);
+    height: 60vh;
+    right: 1rem;
+    left: 1rem;
+  }
+
+  .chat-toggle {
+    right: 1rem;
+    bottom: 1rem;
+  }
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
 }

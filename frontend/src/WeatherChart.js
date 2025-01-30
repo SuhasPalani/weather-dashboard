@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Line } from "react-chartjs-2";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,7 +10,15 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { FaRobot, FaTimes, FaPaperPlane } from "react-icons/fa";
+import {
+  FaRobot,
+  FaTimes,
+  FaPaperPlane,
+  FaSearch,
+  FaWind,
+  FaEye,
+} from "react-icons/fa";
+import { WiHumidity, WiThermometer, WiBarometer } from "react-icons/wi";
 import "./App.css";
 
 ChartJS.register(
@@ -130,46 +138,29 @@ const WeatherChart = () => {
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
-  // Chart data
-  const chartData = {
-    labels: weatherData.map((item) =>
-      new Date(item.timestamp * 1000).toLocaleTimeString()
-    ),
-    datasets: [
-      {
-        label: "Temperature (°C)",
-        data: weatherData.map((item) => item.temperature),
-        borderColor: "rgba(75,192,192,1)",
-        backgroundColor: "rgba(75,192,192,0.2)",
-        fill: true,
-        tension: 0.4,
-      },
-      {
-        label: "Humidity (%)",
-        data: weatherData.map((item) => item.humidity),
-        borderColor: "rgba(153,102,255,1)",
-        backgroundColor: "rgba(153,102,255,0.2)",
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  };
 
   return (
     <div className="weather-app">
       <header className="app-header">
-        <h1>Weather Forecast</h1>
+        <div className="header-content">
+          <h1>Weather Dashboard</h1>
+          <p className="header-subtitle">
+            Real-time weather monitoring and forecasts
+          </p>
+        </div>
       </header>
+
       <main className="app-main">
         <section className="search-section">
           <div className="search-container">
             <div className="input-wrapper">
+              <FaSearch className="search-icon" />
               <input
                 type="text"
                 value={location}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Enter city, state, or zip code"
+                placeholder="Search city, state, or zip code..."
                 className="search-input"
               />
               {suggestions.length > 0 && (
@@ -179,8 +170,12 @@ const WeatherChart = () => {
                       key={index}
                       onClick={() => handleSuggestionClick(suggestion)}
                     >
-                      {suggestion.name}{" "}
-                      {suggestion.type === "city" && `(${suggestion.state})`}
+                      {suggestion.name}
+                      {suggestion.type === "city" && (
+                        <span className="suggestion-state">
+                          {suggestion.state}
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -191,86 +186,136 @@ const WeatherChart = () => {
               disabled={loading}
               className="search-button"
             >
-              {loading ? "Loading..." : "Search"}
+              {loading ? <div className="loader"></div> : "Search"}
             </button>
           </div>
         </section>
 
-        {error && <p className="error-message">{error}</p>}
+        {error && (
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+          </div>
+        )}
 
         {!loading && weatherData.length > 0 && (
           <section className="weather-info">
-            <h2>{weatherData[0].location}</h2>
-            <div className="weather-details">
-              <div className="weather-card">
-                <h3>Temperature</h3>
-                <p>{weatherData[0].temperature}°C</p>
-                <p>Feels like: {weatherData[0].feelslike_c}°C</p>
+            <div className="location-header">
+              <h2>{weatherData[0].location}</h2>
+              <p className="last-updated">
+                Last Updated: {weatherData[0].last_updated}
+              </p>
+            </div>
+
+            <div className="weather-grid">
+              <div className="weather-card temperature">
+                <WiThermometer className="card-icon" />
+                <div className="card-content">
+                  <h3>Temperature</h3>
+                  <p className="primary-value">
+                    {weatherData[0].temperature}°C
+                  </p>
+                  <p className="secondary-value">
+                    Feels like: {weatherData[0].feelslike_c}°C
+                  </p>
+                </div>
               </div>
-              <div className="weather-card">
-                <h3>Humidity</h3>
-                <p>{weatherData[0].humidity}%</p>
+
+              <div className="weather-card humidity">
+                <WiHumidity className="card-icon" />
+                <div className="card-content">
+                  <h3>Humidity</h3>
+                  <p className="primary-value">{weatherData[0].humidity}%</p>
+                </div>
               </div>
-              <div className="weather-card">
-                <h3>Wind</h3>
-                <p>{weatherData[0].wind_mph} mph</p>
-                <p>Direction: {weatherData[0].wind_dir}</p>
+
+              <div className="weather-card wind">
+                <FaWind className="card-icon" />
+                <div className="card-content">
+                  <h3>Wind</h3>
+                  <p className="primary-value">{weatherData[0].wind_mph} mph</p>
+                  <p className="secondary-value">
+                    Direction: {weatherData[0].wind_dir}
+                  </p>
+                </div>
               </div>
-              <div className="weather-card">
-                <h3>Condition</h3>
-                <p>{weatherData[0].condition.text}</p>
+
+              <div className="weather-card condition">
+                <img
+                  src={weatherData[0].condition.icon}
+                  alt={weatherData[0].condition.text}
+                  className="condition-icon"
+                />
+                <div className="card-content">
+                  <h3>Condition</h3>
+                  <p className="primary-value">
+                    {weatherData[0].condition.text}
+                  </p>
+                </div>
               </div>
-              <div className="weather-card">
-                <h3>Visibility</h3>
-                <p>{weatherData[0].vis_km} km</p>
+
+              <div className="weather-card visibility">
+                <FaEye className="card-icon" />
+                <div className="card-content">
+                  <h3>Visibility</h3>
+                  <p className="primary-value">{weatherData[0].vis_km} km</p>
+                </div>
               </div>
-              <div className="weather-card">
-                <h3>Pressure</h3>
-                <p>{weatherData[0].pressure_mb} mb</p>
+
+              <div className="weather-card pressure">
+                <WiBarometer className="card-icon" />
+                <div className="card-content">
+                  <h3>Pressure</h3>
+                  <p className="primary-value">
+                    {weatherData[0].pressure_mb} mb
+                  </p>
+                </div>
               </div>
             </div>
-            <p className="last-updated">
-              Last Updated: {weatherData[0].last_updated}
-            </p>
-          </section>
-        )}
-
-        {weatherData.length > 0 && (
-          <section className="chart-section">
-            <h2>Temperature and Humidity Chart</h2>
-            <Line data={chartData} />
           </section>
         )}
       </main>
 
       <button className="chat-toggle" onClick={toggleChat}>
         <FaRobot />
+        <span>Weather Assistant</span>
       </button>
 
       {isChatOpen && (
         <div className="chatbot-container">
           <div className="chat-header">
-            <h3>Weather Assistant</h3>
+            <div className="chat-header-title">
+              <FaRobot className="chat-header-icon" />
+              <h3>Weather Assistant</h3>
+            </div>
             <button className="close-chat" onClick={toggleChat}>
               <FaTimes />
             </button>
           </div>
+
           <div className="chat-history" ref={chatContainerRef}>
             {chatHistory.map((msg, index) => (
               <div key={index} className={`chat-message ${msg.role}`}>
+                {msg.role === "assistant" && (
+                  <FaRobot className="message-icon" />
+                )}
                 <div className="message-content">{msg.content}</div>
               </div>
             ))}
           </div>
+
           <div className="chat-input">
             <input
               type="text"
               value={chatMessage}
               onChange={(e) => setChatMessage(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleChatSubmit()}
-              placeholder="Ask about weather..."
+              placeholder="Ask about weather conditions..."
             />
-            <button onClick={handleChatSubmit}>
+            <button
+              onClick={handleChatSubmit}
+              className="send-button"
+              disabled={!chatMessage.trim()}
+            >
               <FaPaperPlane />
             </button>
           </div>
@@ -279,4 +324,5 @@ const WeatherChart = () => {
     </div>
   );
 };
+
 export default WeatherChart;

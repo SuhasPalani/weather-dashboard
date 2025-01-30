@@ -1,0 +1,5 @@
+Flask
+pymongo
+requests
+schedule
+python-dotenv      # to manage environment variables from `.env` file

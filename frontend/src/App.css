@@ -1,0 +1,157 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+.app-container {
+  padding: 20px;
+  background-color: #f0f4f8;
+  color: #333;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.app-container.dark {
+  background-color: #333;
+  color: #f0f4f8;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.theme-toggle-btn {
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.theme-toggle-btn:hover {
+  background-color: #45a049;
+}
+
+.controls {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.controls input {
+  padding: 10px;
+  font-size: 16px;
+  width: 200px;
+  margin-right: 10px;
+  border-radius: 5px;
+}
+
+.controls button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #2196f3;
+  color: white;
+  border-radius: 5px;
+}
+
+.weather-chart-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+canvas {
+  max-height: 500px;
+}
+
+
+.weather-chart-container {
+  width: 90%;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.search-controls {
+  margin-bottom: 20px;
+}
+
+.search-controls input {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  width: 200px;
+  margin-right: 10px;
+}
+
+.search-controls button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.search-controls button:hover {
+  background-color: #0056b3;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+canvas {
+  max-height: 400px;
+}
+
+.search-input-container {
+  position: relative;
+  width: 300px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestions li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.suggestions li:hover {
+  background-color: #f0f0f0;
+}
+
+.search-button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+}

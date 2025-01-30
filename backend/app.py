@@ -4,7 +4,8 @@ from pymongo import MongoClient
 import requests
 from dotenv import load_dotenv
 from flask_cors import CORS
-
+import openai
+import re
 # Load environment variables from the .env file
 load_dotenv()
 
@@ -17,6 +18,8 @@ MONGODB_URI = os.getenv("MONGODB_URI")
 client = MongoClient(MONGODB_URI)
 db = client.weather_database
 collection = db.weather_data
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # WeatherAPI configuration using the API key from the .env file
 WEATHER_API_URL = "http://api.weatherapi.com/v1/current.json"
@@ -80,6 +83,10 @@ def capitalize_first_letter(input_string):
     return input_string.capitalize()
 
 def fetch_weather_data(location):
+    if location in us_states_cities:
+        # If a state name is provided, use the first city in the list for that state
+        location = us_states_cities[location][0]
+    
     params = {"key": API_KEY, "q": location, "aqi": "no"}
     response = requests.get(WEATHER_API_URL, params=params)
     if response.status_code == 200:
@@ -162,6 +169,64 @@ def get_suggestions():
                 suggestions.append({"type": "city", "name": city, "state": state})
 
     return jsonify(suggestions[:10])
+
+import re
+
+def extract_location(message):
+    words = re.findall(r'\b[A-Za-z]+\b', message)
+    for word in words:
+        word = word.capitalize()
+        if word in us_states_cities:  # Check if it's a state name
+            return word
+        for state, cities in us_states_cities.items():
+            if word in cities:  # Check if it's a city name
+                return word
+    return None
+
+
+@app.route("/chatbot", methods=["POST"])
+def chatbot():
+    data = request.json
+    user_message = data.get('message', '')
+    
+    location = extract_location(user_message)
+    
+    if location:
+        weather_data = fetch_weather_data(location)
+        
+        if weather_data:
+            context = prepare_weather_context(weather_data)
+            
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant for weather-related queries. Use the provided weather data to answer questions accurately and concisely."},
+                        {"role": "user", "content": f"Weather data: {context}\n\nUser query: {user_message}"}
+                    ]
+                )
+                
+                bot_reply = response.choices[0].message['content']
+                return jsonify({"reply": bot_reply})
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+        else:
+            return jsonify({"reply": f"I'm sorry, I couldn't fetch weather data for {location}. Please try again later or check if the location is spelled correctly."})
+    else:
+        return jsonify({"reply": "I'm sorry, I couldn't identify a specific location in your message. Could you please rephrase your question with a city name?"})
+
+def prepare_weather_context(weather_data):
+    return f"""
+    Location: {weather_data['location']['name']}, {weather_data['location']['region']}, {weather_data['location']['country']}
+    Current temperature: {weather_data['current']['temp_c']}°C ({weather_data['current']['temp_f']}°F)
+    Feels like: {weather_data['current']['feelslike_c']}°C ({weather_data['current']['feelslike_f']}°F)
+    Condition: {weather_data['current']['condition']['text']}
+    Humidity: {weather_data['current']['humidity']}%
+    Wind: {weather_data['current']['wind_mph']} mph, direction {weather_data['current']['wind_dir']}
+    Visibility: {weather_data['current']['vis_km']} km
+    Last updated: {weather_data['current']['last_updated']}
+    """
+
 
 if __name__ == "__main__":
     app.run(debug=True)

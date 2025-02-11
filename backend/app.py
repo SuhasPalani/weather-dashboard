@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 import openai
 import re
+
 from spellchecker import SpellChecker
+
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -181,12 +183,28 @@ def get_suggestions():
     query = request.args.get("query", "").lower()
     suggestions = []
 
+    # Location suggestions
     for state, cities in us_states_cities.items():
         if query in state.lower():
-            suggestions.append({"type": "state", "name": state})
+            suggestions.append({"type": "location", "value": state})
         for city in cities:
             if query in city.lower():
-                suggestions.append({"type": "city", "name": city, "state": state})
+                suggestions.append({"type": "location", "value": f"{city}, {state}"})
+
+    # Question suggestions
+    question_templates = [
+        "What's the weather like in {}?",
+        "Is it raining in {}?",
+        "What's the temperature in {}?",
+        "How's the weather in {}?",
+        "Will it be sunny in {} today?",
+    ]
+
+    for template in question_templates:
+        if query in template.lower():
+            suggestions.append(
+                {"type": "question", "value": template.format("{location}")}
+            )
 
     return jsonify(suggestions[:10])
 
@@ -203,6 +221,17 @@ def extract_location(message):
     return None
 
 
+from spellchecker import SpellChecker
+
+spell = SpellChecker()
+
+
+def correct_spelling(text):
+    words = text.split()
+    corrected_words = [spell.correction(word) or word for word in words]
+    return " ".join(corrected_words)
+
+
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
     data = request.json
@@ -210,6 +239,9 @@ def chatbot():
 
     # Apply spell checking
     corrected_message = check_spelling(user_message)
+
+    # Apply spelling correction
+    corrected_message = correct_spelling(user_message)
 
     location = extract_location(corrected_message)
 
@@ -235,11 +267,23 @@ def chatbot():
                 )
 
                 bot_reply = response.choices[0].message["content"]
-                return jsonify({
-                    "reply": bot_reply,
-                    "original_message": user_message,
-                    "corrected_message": corrected_message
-                })
+
+                return jsonify(
+                    {
+                        "reply": bot_reply,
+                        "original_message": user_message,
+                        "corrected_message": corrected_message,
+                    }
+                )
+
+                # If spelling was corrected, inform the user
+                if corrected_message != user_message:
+                    bot_reply = (
+                        f"I assumed you meant: '{corrected_message}'\n\n" + bot_reply
+                    )
+
+                return jsonify({"reply": bot_reply})
+
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
         else:
@@ -247,7 +291,7 @@ def chatbot():
                 {
                     "reply": f"I'm sorry, I couldn't fetch weather data for {location}. Please try again later or check if the location is spelled correctly.",
                     "original_message": user_message,
-                    "corrected_message": corrected_message
+                    "corrected_message": corrected_message,
                 }
             )
     else:
@@ -255,7 +299,7 @@ def chatbot():
             {
                 "reply": "I'm sorry, I couldn't identify a specific location in your message. Could you please rephrase your question with a city name?",
                 "original_message": user_message,
-                "corrected_message": corrected_message
+                "corrected_message": corrected_message,
             }
         )
 

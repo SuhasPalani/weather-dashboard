@@ -59,10 +59,16 @@ const WeatherChart = () => {
   const handleInputChange = async (e) => {
     const value = e.target.value;
     setLocation(value);
+
     if (value.length > 1) {
-      const response = await fetch(`${BASE_URL}/suggestions?query=${value}`);
-      const data = await response.json();
-      setSuggestions(data);
+      try {
+        const response = await fetch(`${BASE_URL}/suggestions?query=${value}`);
+        const data = await response.json();
+        setSuggestions(data || []); // Fallback to empty array if no data
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+        setSuggestions([]); // Clear suggestions on error
+      }
     } else {
       setSuggestions([]);
     }
@@ -258,8 +264,6 @@ const WeatherChart = () => {
             <p className="error-message">{error}</p>
           </div>
         )}
-
-        
       </main>
 
       {/* Chat Toggle */}

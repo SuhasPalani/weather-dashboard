@@ -1,15 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   FaRobot,
   FaTimes,
@@ -21,16 +10,6 @@ import {
 import { WiHumidity, WiThermometer, WiBarometer } from "react-icons/wi";
 import "./App.css";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
 const WeatherChart = () => {
   const [location, setLocation] = useState("");
   const [weatherData, setWeatherData] = useState([]);
@@ -40,10 +19,12 @@ const WeatherChart = () => {
   const [chatMessage, setChatMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef(null);
 
   const BASE_URL = "http://127.0.0.1:5000";
 
+  // Scroll to the latest message when chat history updates
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
@@ -51,7 +32,8 @@ const WeatherChart = () => {
     }
   }, [chatHistory]);
 
-  const fetchWeatherData = async (loc) => {
+  // Fetch weather data
+  const fetchWeatherData = useCallback(async (loc) => {
     setLoading(true);
     setError(null);
     try {
@@ -71,14 +53,9 @@ const WeatherChart = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSearch = () => {
-    if (location) {
-      fetchWeatherData(location);
-    }
-  };
-
+  // Fetch suggestions for locations
   const handleInputChange = async (e) => {
     const value = e.target.value;
     setLocation(value);
@@ -103,18 +80,14 @@ const WeatherChart = () => {
     );
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
+  // Handle chat submission
   const handleChatSubmit = async () => {
     if (chatMessage.trim() === "") return;
 
     const userMessage = { role: "user", content: chatMessage };
     setChatHistory([...chatHistory, userMessage]);
     setChatMessage("");
+    setIsTyping(true); // Show typing indicator
 
     try {
       const response = await fetch(`${BASE_URL}/chatbot`, {
@@ -132,6 +105,8 @@ const WeatherChart = () => {
         content: "Sorry, I encountered an error. Please try again.",
       };
       setChatHistory((prevHistory) => [...prevHistory, errorMessage]);
+    } finally {
+      setIsTyping(false); // Hide typing indicator
     }
   };
 
@@ -139,8 +114,13 @@ const WeatherChart = () => {
     setIsChatOpen(!isChatOpen);
   };
 
+  const clearChatHistory = () => {
+    setChatHistory([]);
+  };
+
   return (
     <div className="weather-app">
+      {/* Header */}
       <header className="app-header">
         <div className="header-content">
           <h1>Weather Dashboard</h1>
@@ -150,6 +130,7 @@ const WeatherChart = () => {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="app-main">
         <section className="search-section">
           <div className="search-container">
@@ -159,7 +140,6 @@ const WeatherChart = () => {
                 type="text"
                 value={location}
                 onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
                 placeholder="Search city, state, or zip code..."
                 className="search-input"
               />
@@ -182,7 +162,7 @@ const WeatherChart = () => {
               )}
             </div>
             <button
-              onClick={handleSearch}
+              onClick={() => fetchWeatherData(location)}
               disabled={loading}
               className="search-button"
             >
@@ -190,7 +170,6 @@ const WeatherChart = () => {
             </button>
           </div>
         </section>
-
         {error && (
           <div className="error-container">
             <p className="error-message">{error}</p>
@@ -273,13 +252,23 @@ const WeatherChart = () => {
             </div>
           </section>
         )}
+        {/* Weather Data */}
+        {error && (
+          <div className="error-container">
+            <p className="error-message">{error}</p>
+          </div>
+        )}
+
+        
       </main>
 
+      {/* Chat Toggle */}
       <button className="chat-toggle" onClick={toggleChat}>
         <FaRobot />
         <span>Weather Assistant</span>
       </button>
 
+      {/* Chatbot */}
       {isChatOpen && (
         <div className="chatbot-container">
           <div className="chat-header">
@@ -292,6 +281,7 @@ const WeatherChart = () => {
             </button>
           </div>
 
+          {/* Chat History */}
           <div className="chat-history" ref={chatContainerRef}>
             {chatHistory.map((msg, index) => (
               <div key={index} className={`chat-message ${msg.role}`}>
@@ -301,8 +291,15 @@ const WeatherChart = () => {
                 <div className="message-content">{msg.content}</div>
               </div>
             ))}
+            {isTyping && (
+              <div className="chat-message assistant">
+                <FaRobot className="message-icon" />
+                <div className="message-content">Typing...</div>
+              </div>
+            )}
           </div>
 
+          {/* Chat Input */}
           <div className="chat-input">
             <input
               type="text"
@@ -319,6 +316,11 @@ const WeatherChart = () => {
               <FaPaperPlane />
             </button>
           </div>
+
+          {/* Clear Chat History Button */}
+          <button className="clear-chat" onClick={clearChatHistory}>
+            Clear Chat
+          </button>
         </div>
       )}
     </div>

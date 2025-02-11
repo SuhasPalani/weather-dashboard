@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 import openai
 import re
+from spellchecker import SpellChecker
+
 # Load environment variables from the .env file
 load_dotenv()
 
@@ -75,18 +77,19 @@ us_states_cities = {
     "Washington": ["Seattle", "Spokane", "Tacoma", "Bellevue"],
     "West Virginia": ["Charleston", "Morgantown", "Huntington", "Parkersburg"],
     "Wisconsin": ["Milwaukee", "Madison", "Green Bay", "Kenosha"],
-    "Wyoming": ["Cheyenne", "Casper", "Laramie", "Gillette"]
+    "Wyoming": ["Cheyenne", "Casper", "Laramie", "Gillette"],
 }
 
 
 def capitalize_first_letter(input_string):
     return input_string.capitalize()
 
+
 def fetch_weather_data(location):
     if location in us_states_cities:
         # If a state name is provided, use the first city in the list for that state
         location = us_states_cities[location][0]
-    
+
     params = {"key": API_KEY, "q": location, "aqi": "no"}
     response = requests.get(WEATHER_API_URL, params=params)
     if response.status_code == 200:
@@ -99,30 +102,46 @@ def fetch_weather_data(location):
         return None
 
 
+spell = SpellChecker()
+
+
+def check_spelling(text):
+    words = text.split()
+    corrected_words = []
+    for word in words:
+        corrected_word = spell.correction(word)
+        if corrected_word != word:
+            corrected_words.append(f"{corrected_word}*")
+        else:
+            corrected_words.append(word)
+    return " ".join(corrected_words)
+
+
 @app.route("/weather-data", methods=["GET"])
 def get_weather_data():
-    location = request.args.get('location', 'Chicago')
+    location = request.args.get("location", "Chicago")
     # Split the location into city and state
-    location_parts = location.split(',')
+    location_parts = location.split(",")
     city = location_parts[0].strip()
     state = location_parts[1].strip() if len(location_parts) > 1 else None
 
-    query = {"$or": [
-        {"location.name": city},
-        {"location.region": city}
-    ]}
+    query = {"$or": [{"location.name": city}, {"location.region": city}]}
     if state:
         query["$or"].append({"location.region": state})
 
-    data = collection.find_one(query, {"_id": 0}, sort=[("location.localtime_epoch", -1)])
-    
+    data = collection.find_one(
+        query, {"_id": 0}, sort=[("location.localtime_epoch", -1)]
+    )
+
     if data:
-        processed_data = [{
-            "timestamp": data["location"]["localtime_epoch"],
-            "temperature": data["current"]["temp_c"],
-            "humidity": data["current"]["humidity"],
-            "location": f"{data['location']['name']}, {data['location']['region']}, {data['location']['country']}"
-        }]
+        processed_data = [
+            {
+                "timestamp": data["location"]["localtime_epoch"],
+                "temperature": data["current"]["temp_c"],
+                "humidity": data["current"]["humidity"],
+                "location": f"{data['location']['name']}, {data['location']['region']}, {data['location']['country']}",
+            }
+        ]
         return jsonify(processed_data)
     else:
         return jsonify([]), 404  # Return 404 status code if no data found
@@ -131,29 +150,30 @@ def get_weather_data():
 @app.route("/fetch-weather", methods=["POST"])
 def fetch_and_store_weather():
     data = request.json
-    location = data.get('location', 'Chicago')
+    location = data.get("location", "Chicago")
     weather_data = fetch_weather_data(location)
     if weather_data:
-        return jsonify({
-            "message": f"Weather data fetched and stored successfully for {weather_data['location']['name']}, {weather_data['location']['region']}, {weather_data['location']['country']}!",
-            "data": {
-                "timestamp": weather_data["location"]["localtime_epoch"],
-                "temperature": weather_data["current"]["temp_c"],
-                "humidity": weather_data["current"]["humidity"],
-                "location": f"{weather_data['location']['name']}, {weather_data['location']['region']}, {weather_data['location']['country']}",
-                "wind_mph": weather_data["current"]["wind_mph"],
-                "wind_dir": weather_data["current"]["wind_dir"],
-                "condition": weather_data["current"]["condition"],
-                "last_updated": weather_data["current"]["last_updated"],
-                "pressure_mb": weather_data["current"]["pressure_mb"],
-                "feelslike_c": weather_data["current"]["feelslike_c"],
-                "dewpoint_c": weather_data["current"]["dewpoint_c"],
-                "vis_km": weather_data["current"]["vis_km"]
+        return jsonify(
+            {
+                "message": f"Weather data fetched and stored successfully for {weather_data['location']['name']}, {weather_data['location']['region']}, {weather_data['location']['country']}!",
+                "data": {
+                    "timestamp": weather_data["location"]["localtime_epoch"],
+                    "temperature": weather_data["current"]["temp_c"],
+                    "humidity": weather_data["current"]["humidity"],
+                    "location": f"{weather_data['location']['name']}, {weather_data['location']['region']}, {weather_data['location']['country']}",
+                    "wind_mph": weather_data["current"]["wind_mph"],
+                    "wind_dir": weather_data["current"]["wind_dir"],
+                    "condition": weather_data["current"]["condition"],
+                    "last_updated": weather_data["current"]["last_updated"],
+                    "pressure_mb": weather_data["current"]["pressure_mb"],
+                    "feelslike_c": weather_data["current"]["feelslike_c"],
+                    "dewpoint_c": weather_data["current"]["dewpoint_c"],
+                    "vis_km": weather_data["current"]["vis_km"],
+                },
             }
-        })
+        )
     else:
         return jsonify({"error": "Failed to fetch weather data"}), 404
-
 
 
 @app.route("/suggestions", methods=["GET"])
@@ -170,10 +190,9 @@ def get_suggestions():
 
     return jsonify(suggestions[:10])
 
-import re
 
 def extract_location(message):
-    words = re.findall(r'\b[A-Za-z]+\b', message)
+    words = re.findall(r"\b[A-Za-z]+\b", message)
     for word in words:
         word = word.capitalize()
         if word in us_states_cities:  # Check if it's a state name
@@ -187,44 +206,70 @@ def extract_location(message):
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
     data = request.json
-    user_message = data.get('message', '')
-    
-    location = extract_location(user_message)
-    
+    user_message = data.get("message", "")
+
+    # Apply spell checking
+    corrected_message = check_spelling(user_message)
+
+    location = extract_location(corrected_message)
+
     if location:
         weather_data = fetch_weather_data(location)
-        
+
         if weather_data:
             context = prepare_weather_context(weather_data)
-            
+
             try:
                 response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=[
-                        {"role": "system", "content": "You are a helpful assistant for weather-related queries. Use the provided weather data to answer questions accurately and concisely."},
-                        {"role": "user", "content": f"Weather data: {context}\n\nUser query: {user_message}"}
-                    ]
+                        {
+                            "role": "system",
+                            "content": "You are a helpful assistant for weather-related queries. Use the provided weather data to answer questions accurately and concisely.",
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Weather data: {context}\n\nUser query: {corrected_message}",
+                        },
+                    ],
                 )
-                
-                bot_reply = response.choices[0].message['content']
-                return jsonify({"reply": bot_reply})
+
+                bot_reply = response.choices[0].message["content"]
+                return jsonify({
+                    "reply": bot_reply,
+                    "original_message": user_message,
+                    "corrected_message": corrected_message
+                })
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
         else:
-            return jsonify({"reply": f"I'm sorry, I couldn't fetch weather data for {location}. Please try again later or check if the location is spelled correctly."})
+            return jsonify(
+                {
+                    "reply": f"I'm sorry, I couldn't fetch weather data for {location}. Please try again later or check if the location is spelled correctly.",
+                    "original_message": user_message,
+                    "corrected_message": corrected_message
+                }
+            )
     else:
-        return jsonify({"reply": "I'm sorry, I couldn't identify a specific location in your message. Could you please rephrase your question with a city name?"})
+        return jsonify(
+            {
+                "reply": "I'm sorry, I couldn't identify a specific location in your message. Could you please rephrase your question with a city name?",
+                "original_message": user_message,
+                "corrected_message": corrected_message
+            }
+        )
+
 
 def prepare_weather_context(weather_data):
     return f"""
-    Location: {weather_data['location']['name']}, {weather_data['location']['region']}, {weather_data['location']['country']}
-    Current temperature: {weather_data['current']['temp_c']}°C ({weather_data['current']['temp_f']}°F)
-    Feels like: {weather_data['current']['feelslike_c']}°C ({weather_data['current']['feelslike_f']}°F)
-    Condition: {weather_data['current']['condition']['text']}
-    Humidity: {weather_data['current']['humidity']}%
-    Wind: {weather_data['current']['wind_mph']} mph, direction {weather_data['current']['wind_dir']}
-    Visibility: {weather_data['current']['vis_km']} km
-    Last updated: {weather_data['current']['last_updated']}
+    Location: {weather_data["location"]["name"]}, {weather_data["location"]["region"]}, {weather_data["location"]["country"]}
+    Current temperature: {weather_data["current"]["temp_c"]}°C ({weather_data["current"]["temp_f"]}°F)
+    Feels like: {weather_data["current"]["feelslike_c"]}°C ({weather_data["current"]["feelslike_f"]}°F)
+    Condition: {weather_data["current"]["condition"]["text"]}
+    Humidity: {weather_data["current"]["humidity"]}%
+    Wind: {weather_data["current"]["wind_mph"]} mph, direction {weather_data["current"]["wind_dir"]}
+    Visibility: {weather_data["current"]["vis_km"]} km
+    Last updated: {weather_data["current"]["last_updated"]}
     """
 
 

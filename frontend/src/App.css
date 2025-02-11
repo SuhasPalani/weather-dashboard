@@ -490,3 +490,32 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-dark);
 }
+
+
+.clear-chat {
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin: 10px;
+  text-align: center;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.clear-chat:hover {
+  background-color: #ff4f4f;
+  transform: scale(1.05);
+}
+
+.clear-chat:active {
+  background-color: #e64b4b;
+}
+
+/* Adjusting the position of the Clear Chat Button */
+.clear-chat {
+  align-self: center;
+  margin-top: 10px;
+}

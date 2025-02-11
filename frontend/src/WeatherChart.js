@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { debounce } from "lodash";
 
 import {
   Chart as ChartJS,
@@ -41,6 +42,7 @@ const WeatherChart = () => {
   const [chatHistory, setChatHistory] = useState([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const chatContainerRef = useRef(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   const BASE_URL = "http://127.0.0.1:5000";
 
@@ -50,38 +52,17 @@ const WeatherChart = () => {
         chatContainerRef.current.scrollHeight;
     }
   }, [chatHistory]);
-
-  const fetchWeatherData = async (loc) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const fetchResponse = await fetch(`${BASE_URL}/fetch-weather`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ location: loc }),
-      });
-      const fetchData = await fetchResponse.json();
-      if (fetchResponse.ok) {
-        setWeatherData([fetchData.data]);
-      } else {
-        setError(fetchData.error || "Failed to fetch weather data");
-      }
-    } catch (err) {
-      setError("Failed to fetch weather data");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    const savedHistory = localStorage.getItem("chatHistory");
+    if (savedHistory) {
+      setChatHistory(JSON.parse(savedHistory));
     }
-  };
+  }, []);
 
-  const handleSearch = () => {
-    if (location) {
-      fetchWeatherData(location);
-    }
-  };
-
-  const handleInputChange = async (e) => {
-    const value = e.target.value;
-    setLocation(value);
+  useEffect(() => {
+    document.body.classList.toggle("dark-mode", darkMode);
+  }, [darkMode]);
+  const debouncedFetchSuggestions = debounce(async (value) => {
     if (value.length > 1) {
       const response = await fetch(`${BASE_URL}/suggestions?query=${value}`);
       const data = await response.json();
@@ -89,25 +70,20 @@ const WeatherChart = () => {
     } else {
       setSuggestions([]);
     }
-  };
+  }, 300);
 
-  const handleSuggestionClick = (suggestion) => {
-    setLocation(
-      suggestion.name +
-        (suggestion.type === "city" ? `, ${suggestion.state}` : "")
-    );
-    setSuggestions([]);
-    fetchWeatherData(
-      suggestion.name +
-        (suggestion.type === "city" ? `, ${suggestion.state}` : "")
-    );
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setLocation(value);
+    debouncedFetchSuggestions(value);
   };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
+  // Add a toggle button in the header
+  <button onClick={() => setDarkMode(!darkMode)}>
+    {darkMode ? "Light Mode" : "Dark Mode"}
+  </button>;
+  useEffect(() => {
+    localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+  }, [chatHistory]);
 
   const handleChatSubmit = async () => {
     if (chatMessage.trim() === "") return;
@@ -132,6 +108,52 @@ const WeatherChart = () => {
         content: "Sorry, I encountered an error. Please try again.",
       };
       setChatHistory((prevHistory) => [...prevHistory, errorMessage]);
+    }
+  };
+
+  const fetchWeatherData = async (loc) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const fetchResponse = await fetch(`${BASE_URL}/fetch-weather`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location: loc }),
+      });
+      const fetchData = await fetchResponse.json();
+      if (fetchResponse.ok) {
+        setWeatherData([fetchData.data]);
+      } else {
+        setError(fetchData.error || "Failed to fetch weather data");
+      }
+    } catch (err) {
+      setError("Network error. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    if (location) {
+      fetchWeatherData(location);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setLocation(
+      suggestion.name +
+        (suggestion.type === "city" ? `, ${suggestion.state}` : "")
+    );
+    setSuggestions([]);
+    fetchWeatherData(
+      suggestion.name +
+        (suggestion.type === "city" ? `, ${suggestion.state}` : "")
+    );
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
     }
   };
 

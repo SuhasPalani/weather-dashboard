@@ -1,0 +1,315 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Weather API",
+      "description": "API for fetching and storing weather data for cities and states in the US",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:5000",
+        "description": "Local development server"
+      }
+    ],
+    "paths": {
+      "/weather-data": {
+        "get": {
+          "summary": "Get stored weather data for a location",
+          "description": "Retrieves the most recent weather data for a specific location from the database",
+          "parameters": [
+            {
+              "in": "query",
+              "name": "location",
+              "schema": {
+                "type": "string"
+              },
+              "description": "City or state name (default is Chicago)",
+              "example": "Seattle, Washington",
+              "required": false
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved weather data",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "timestamp": {
+                          "type": "integer",
+                          "description": "Unix timestamp of the weather data"
+                        },
+                        "temperature": {
+                          "type": "number",
+                          "description": "Temperature in Celsius"
+                        },
+                        "humidity": {
+                          "type": "integer",
+                          "description": "Humidity percentage"
+                        },
+                        "location": {
+                          "type": "string",
+                          "description": "Full location name (city, region, country)"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "No weather data found for the specified location"
+            }
+          }
+        }
+      },
+      "/fetch-weather": {
+        "post": {
+          "summary": "Fetch and store weather data for a location",
+          "description": "Fetches current weather data from WeatherAPI and stores it in the database",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "location": {
+                      "type": "string",
+                      "description": "City or state name"
+                    }
+                  },
+                  "required": [
+                    "location"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Weather data successfully fetched and stored",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "description": "Success message"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "integer",
+                            "description": "Unix timestamp of the weather data"
+                          },
+                          "temperature": {
+                            "type": "number",
+                            "description": "Temperature in Celsius"
+                          },
+                          "humidity": {
+                            "type": "integer",
+                            "description": "Humidity percentage"
+                          },
+                          "location": {
+                            "type": "string",
+                            "description": "Full location name"
+                          },
+                          "wind_mph": {
+                            "type": "number",
+                            "description": "Wind speed in miles per hour"
+                          },
+                          "wind_dir": {
+                            "type": "string",
+                            "description": "Wind direction"
+                          },
+                          "condition": {
+                            "type": "object",
+                            "description": "Weather condition details"
+                          },
+                          "last_updated": {
+                            "type": "string",
+                            "description": "Last update time"
+                          },
+                          "pressure_mb": {
+                            "type": "number",
+                            "description": "Pressure in millibars"
+                          },
+                          "feelslike_c": {
+                            "type": "number",
+                            "description": "Feels like temperature in Celsius"
+                          },
+                          "dewpoint_c": {
+                            "type": "number",
+                            "description": "Dewpoint in Celsius"
+                          },
+                          "vis_km": {
+                            "type": "number",
+                            "description": "Visibility in kilometers"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Failed to fetch weather data"
+            }
+          }
+        }
+      },
+      "/suggestions": {
+        "get": {
+          "summary": "Get location suggestions based on query",
+          "description": "Returns a list of cities and states matching the search query",
+          "parameters": [
+            {
+              "in": "query",
+              "name": "query",
+              "schema": {
+                "type": "string"
+              },
+              "description": "Partial location name to search for",
+              "required": false
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved suggestions",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "city",
+                            "state"
+                          ],
+                          "description": "Type of location (city or state)"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Name of the city or state"
+                        },
+                        "state": {
+                          "type": "string",
+                          "description": "State name (only for city results)"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/chatbot": {
+        "post": {
+          "summary": "Interact with the weather chatbot",
+          "description": "Processes a user message, extracts location, fetches weather data, and generates a natural language response",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "User's message or question about weather"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Chatbot response generated successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "reply": {
+                        "type": "string",
+                        "description": "Chatbot's response to the user"
+                      },
+                      "original_message": {
+                        "type": "string",
+                        "description": "The user's original message"
+                      },
+                      "corrected_message": {
+                        "type": "string",
+                        "description": "The user's message with spelling corrections"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Error generating chatbot response"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "WeatherData": {
+          "type": "object",
+          "properties": {
+            "timestamp": {
+              "type": "integer",
+              "description": "Unix timestamp of the weather data"
+            },
+            "temperature": {
+              "type": "number",
+              "description": "Temperature in Celsius"
+            },
+            "humidity": {
+              "type": "integer",
+              "description": "Humidity percentage"
+            },
+            "location": {
+              "type": "string",
+              "description": "Full location name (city, region, country)"
+            }
+          }
+        },
+        "ChatbotResponse": {
+          "type": "object",
+          "properties": {
+            "reply": {
+              "type": "string",
+              "description": "Chatbot's response to the user"
+            },
+            "original_message": {
+              "type": "string",
+              "description": "The user's original message"
+            },
+            "corrected_message": {
+              "type": "string",
+              "description": "The user's message with spelling corrections"
+            }
+          }
+        }
+      }
+    }
+  }

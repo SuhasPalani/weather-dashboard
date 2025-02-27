@@ -7,12 +7,14 @@ from flask_cors import CORS
 import openai
 import re
 from spellchecker import SpellChecker
+from swagger import register_swagger_ui
 
 # Load environment variables from the .env file
 load_dotenv()
 
 # Flask app setup
 app = Flask(__name__)
+register_swagger_ui(app)
 CORS(app)
 
 # MongoDB connection using the URI from the .env file
